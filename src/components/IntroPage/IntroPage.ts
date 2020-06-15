@@ -1,11 +1,14 @@
 import { Component } from 'vue-property-decorator';
 import Vue from 'vue';
-import { STORE_MUTATION_UPDATE_INTRO_DONE } from '@/const/storeConsts';
+import { STORE_MUTATION_UPDATE_INTRO_DONE, DIFFICULTY_EASY, DIFFICULTY_HARD, STORE_MUTATION_UPDATE_DIFFICULTY } from '@/const/storeConsts';
 
 @Component
 export default class IntroPage extends Vue {
- introState = 1;
+ introState = 0;
  showScientist = false;
+
+ DIFFICULTY_EASY = DIFFICULTY_EASY;
+ DIFFICULTY_HARD = DIFFICULTY_HARD;
 
 created() {
   this.showScientist = true;
@@ -23,5 +26,15 @@ created() {
    */
   onNext() {
     this.introState += 1;
+  }
+
+  /**
+   * Updates the game difficulty based on the user choiche. Then 
+   * calls onNext.
+   * @param difficulty string
+   */
+  chooseDifficulty(difficulty: any) {
+    this.$store.commit(STORE_MUTATION_UPDATE_DIFFICULTY, difficulty);
+    this.onNext();
   }
 }

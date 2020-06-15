@@ -1,6 +1,7 @@
 <template>
   <div class="GamePage font-minecraft">
-    <div class="row room-gradient-bg swow-scrren-size-error">
+    <!-- error in case the screen is too little -->
+    <div class="row swow-scrren-size-error room-gradient-bg">
       <div class="col">
         <div class="row">
           <div class="col">
@@ -31,7 +32,11 @@
         </div>
       </div>
     </div>
-    <div class="row game-container room-gradient-bg swow-game">
+    <!-- Game page, changes the background dynamically on backgroundStatus -->
+    <div
+      class="row game-container swow-game"
+      v-bind:style="{ 'background-image': 'linear-gradient(to right, rgb('+backgroundStatus.r+', '+backgroundStatus.g+', '+backgroundStatus.b+'), #cfcfcf)' }"
+    >
       <div class="col-4">
         <div class="row">
           <div class="col gear-spinning">
@@ -41,6 +46,7 @@
           </div>
         </div>
         <div class="row">
+          <!-- Stats box -->
           <div class="col">
             <div class="row">
               <div class="col frame-bg-image"></div>
@@ -53,19 +59,28 @@
               </div>
               <div class="row">
                 <div class="col">
-                  <span class="stats-text">Current pressure: {{getGamerPoints()}}</span>
+                  <!-- Current pressure only on EASY mode -->
+                  <span
+                    v-if="$store.state.gameDifficulty === DIFFICULTY_EASY || this.gameEnded"
+                    class="stats-text"
+                  >Current pressure: {{getGamerPoints()}}</span>
                 </div>
               </div>
 
               <div class="row" v-if="!gameEnded">
                 <div class="col">
-                  <span class="stats-text" v-if="gameCounter">You anly have {{gameCounter}} seconds!</span>
+                  <span class="stats-text" v-if="gameCounter">You only have {{gameCounter}} seconds!</span>
                 </div>
               </div>
 
               <div class="row mt-3" v-if="gameEnded">
                 <div class="col">
                   <span class="stats-text" v-if="gameIsWon()">YOU saved the WORLD!! Well done!</span>
+                  <br />
+                  <span
+                    class="stats-text"
+                    v-if="gameIsWon()"
+                  >you got... {{gamePointsOutOfTen()}} / 10</span>
                   <span class="stats-text" v-else>OH NO... there is no more hope for this world....</span>
                 </div>
               </div>
@@ -84,9 +99,11 @@
           </div>
         </div>
       </div>
+      <!-- Liquid boxes -->
       <div class="col">
         <div class="row ml-3 liquid-boxes-container">
           <div class="col-1 liquid-boxes-left-margin"></div>
+          <!-- First box -->
           <div class="liquid-box-container-first-bg-image">
             <div class="liquid-box liquid-box-first">
               <div
@@ -111,6 +128,7 @@
             </div>
           </div>
 
+          <!-- Second Box -->
           <div class="liquid-box-container-bg-image">
             <div class="liquid-box">
               <div
@@ -133,6 +151,8 @@
               </div>
             </div>
           </div>
+
+          <!-- Third box -->
           <div class="liquid-box-container-bg-image">
             <div class="liquid-box">
               <div
@@ -186,7 +206,6 @@
 }
 
 .non-liquid {
-  // height: 100%;
   background-color: #636363;
   z-index: 120;
   width: 125px;
@@ -286,7 +305,7 @@
   background-repeat: no-repeat;
   height: 149px;
   width: 205px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .gear-spinning {
@@ -318,7 +337,7 @@
 
 @media only screen and (min-height: 600px) {
   .frame-bg-image {
-    margin-top: 15vh;
+    margin-top: 13vh;
   }
 
   .liquid-boxes-container {
@@ -328,7 +347,7 @@
 
 @media only screen and (min-height: 750px) {
   .frame-bg-image {
-    margin-top: 30vh;
+    margin-top: 25vh;
   }
 
   .liquid-boxes-container {

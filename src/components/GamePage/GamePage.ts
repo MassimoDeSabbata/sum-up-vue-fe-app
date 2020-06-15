@@ -1,16 +1,26 @@
 import { Component } from 'vue-property-decorator';
 import Vue from 'vue';
 import { LiquidsStatus, BubblesStatus } from '@/models/LiquidsStatusModel';
+import { BackgroundStatus, OPERATION_SUM, OPERATION_SUB } from '@/models/BackgroundStatus';
+import { DIFFICULTY_EASY, DIFFICULTY_HARD } from '@/const/storeConsts';
 
 @Component
 export default class GamePage extends Vue {
   liquidsStatus: any = JSON.parse(JSON.stringify(LiquidsStatus));
-  desideredCount: any = 56;
+  desideredCount: any = 0;
   gameEnded: any = false;
   playButton = true;
+  backgroundStatus: any = { ...BackgroundStatus };
+
+  liquidDelay = 10;
+  boxMinIncrease = 3;
+  gameCounterInitValue = 11;
 
   bubbles: any = { ...BubblesStatus };
   bubbleIndex = 0;
+
+  DIFFICULTY_EASY = DIFFICULTY_EASY;
+  DIFFICULTY_HARD = DIFFICULTY_HARD;
 
   gameCounter: any = null;
 
@@ -43,10 +53,20 @@ export default class GamePage extends Vue {
    * pressure
    */
   gameInit() {
-    this.liquidsStatus.first.boxValue = this.generateRandomBetween(1, 8);
-    this.liquidsStatus.second.boxValue = this.generateRandomBetween(1, 8);
-    this.liquidsStatus.third.boxValue = this.generateRandomBetween(1, 8);
-    this.desideredCount = this.generateRandomBetween(70, 100);
+    this.liquidsStatus.first.boxValue = this.generateRandomBetween(8, 10);
+    this.liquidsStatus.second.boxValue = this.generateRandomBetween(18, 22);
+    this.liquidsStatus.third.boxValue = this.generateRandomBetween(20, 35);
+
+    // Changes the settings based on the difficulty
+    if (this.$store.state.gameDifficulty === DIFFICULTY_HARD) {
+      this.liquidDelay = 2;
+      this.boxMinIncrease = 2;
+      this.gameCounterInitValue = 6;
+      this.desideredCount = this.generateRandomBetween(90, 110);
+    }
+    if (this.$store.state.gameDifficulty === DIFFICULTY_EASY) {
+      this.desideredCount = this.generateRandomBetween(120, 140);
+    }
   }
 
   /**
@@ -67,6 +87,7 @@ export default class GamePage extends Vue {
    * Resets the game to the default status and starts it again.
    */
   resetGame() {
+    this.gameInit();
     this.gameEnded = false;
     this.resetLiquid();
     this.resetBubbles();
@@ -85,14 +106,14 @@ export default class GamePage extends Vue {
       this.decreaseLiquidOnBox('second');
       this.decreaseLiquidOnBox('third');
       this.checkGameEnded();
-      await this.delay(10);
+      await this.delay(this.liquidDelay);
     }
   }
 
   /**
    * Given a box container (first, second, third), if it has not been stopped:
    *    - Decresed the "non liquid" <div> height giving the impression that the liquid is growing
-   *    - Increses the pressure oh the box (boxValue) with a chanche of 2%
+   *    - Increses the pressure oh the box (boxValue) with a chanche of 3%
    *    - If the the "non liquid" <div> height is less then 0, stops the box.
    * @param box string
    */
@@ -101,7 +122,8 @@ export default class GamePage extends Vue {
       this.liquidsStatus[box].height -= 0.1;
       const diceRoll = this.generateRandomBetween(1, 100);
       if (diceRoll > 97) {
-        this.liquidsStatus[box].boxValue += 2;
+        this.liquidsStatus[box].boxValue += this.generateRandomBetween(this.boxMinIncrease, this.boxMinIncrease + 1);
+        // this.liquidsStatus[box].boxValue += 3;
       }
       if (this.liquidsStatus[box].height <= 0) {
         this.liquidsStatus[box].stopped = true;
@@ -114,12 +136,25 @@ export default class GamePage extends Vue {
    */
   checkGameEnded() {
     if (this.liquidsStatus.first.stopped && this.liquidsStatus.second.stopped && this.liquidsStatus.third.stopped) {
-      this.gameEnded = true;
+      this.endGame();
       return;
     }
     if (this.gameCounter === 0) {
-      this.gameEnded = true;
+      this.endGame();
       return;
+    }
+  }
+
+  /**
+   * Stops the hame and starts the transition of the background to red if the game is lost
+   * ot transition to blue if the game is won.
+   */
+  endGame() {
+    this.gameEnded = true;
+    if (this.gameIsWon()) {
+      this.TransitBgToBlue();
+    } else {
+      this.TransitBgToRed();
     }
   }
 
@@ -200,7 +235,7 @@ export default class GamePage extends Vue {
    * This function resets and starts the game counter, used adds count-down.
    */
   async startCounter() {
-    this.gameCounter = 11;
+    this.gameCounter = this.gameCounterInitValue;
     while (this.gameCounter > 0 && !this.gameEnded) {
       this.gameCounter -= 1;
       await this.delay(1000);
@@ -209,13 +244,90 @@ export default class GamePage extends Vue {
 
   /**
    * When the game ends checks if the game is won, so if the sum of the box values is
-   * NOT greater the the desidere one and is NOT more then 3 points less then the desidered one.
+   * NOT greater the the desidere one and is NOT more then (10% of desidered count) points
+   * less then the desidered one.
    */
   gameIsWon() {
-    if (this.desideredCount - this.getGamerPoints() < 3 && this.desideredCount - this.getGamerPoints() >= 0) {
+    if (this.desideredCount - this.getGamerPoints() <= this.getTenPercentOfTotal() && this.desideredCount - this.getGamerPoints() >= 0) {
       return true;
     }
     return false;
+  }
+
+  /**
+   * When the game is won this function give a rate to the user perfonmance form 0 to 10.
+   * The rate is a proportion on bas 10 of how much is the result different from the
+   * desidered count.
+   */
+  gamePointsOutOfTen() {
+    return 10 - Math.floor(((this.desideredCount - this.getGamerPoints()) * 10) / this.getTenPercentOfTotal());
+  }
+
+  /**
+   * Returns the 10% of the desidered count.
+   */
+  getTenPercentOfTotal() {
+    return (this.desideredCount / 100) * 10;
+  }
+
+  /**
+   * Make the background transit to red, waits 2 seconds then get
+   * the background back to normal grey
+   */
+  async TransitBgToRed() {
+    for (let index = 0; index < 50; index++) {
+      this.trnasitRgbByOne(OPERATION_SUM, OPERATION_SUB, OPERATION_SUB);
+      await this.delay(10);
+    }
+    await this.delay(2000);
+    for (let index = 0; index < 50; index++) {
+      this.trnasitRgbByOne(OPERATION_SUB, OPERATION_SUM, OPERATION_SUM);
+      await this.delay(10);
+    }
+  }
+
+  /**
+   * Make the background transit to blue, waits 2 seconds then get
+   * the background back to normal grey
+   */
+  async TransitBgToBlue() {
+    for (let index = 0; index < 50; index++) {
+      this.trnasitRgbByOne(OPERATION_SUB, null, OPERATION_SUM);
+      await this.delay(10);
+    }
+    await this.delay(2000);
+    for (let index = 0; index < 50; index++) {
+      this.trnasitRgbByOne(OPERATION_SUM, null, OPERATION_SUB);
+      await this.delay(10);
+    }
+  }
+
+  /**
+   * Given an operation (Sum or Decrease) for every color of rgb operates a transition of one
+   * to every one of them, one more if sum, one less if decrease.
+   * @param rOperation string
+   * @param gOperation string
+   * @param bOperation string
+   */
+  trnasitRgbByOne(rOperation: any, gOperation: any, bOperation: any) {
+    this.transitSingleColorByOne('r', rOperation);
+    this.transitSingleColorByOne('g', gOperation);
+    this.transitSingleColorByOne('b', bOperation);
+  }
+
+  /**
+   * Given an operation (Sum or Decrease) and a color of rgb operates a transition of one
+   * to it, one more if sum, one less if decrease.
+   * @param color string
+   * @param operation string
+   */
+  transitSingleColorByOne(color: string, operation: any) {
+    if (operation === OPERATION_SUM) {
+      this.backgroundStatus[color] += 1;
+    }
+    if (operation === OPERATION_SUB) {
+      this.backgroundStatus[color] -= 1;
+    }
   }
 
   /**

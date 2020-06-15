@@ -37,7 +37,7 @@
           <div class="col-12">
             <div class="row">
               <div class="col-6">
-                <div class="scienziato-bg-image"></div>
+                <div v-if="introState >= 1" class="scienziato-bg-image"></div>
               </div>
               <div class="col-6">
                 <div v-if="introState >= 2" class="human-bg-image"></div>
@@ -49,6 +49,10 @@
           <div class="col-12 dialog-box">
             <div class="row">
               <div class="col-10 dialogue-line">
+                <span
+                  v-if="introState === 0"
+                  class="dialog-text"
+                >Choose a difficulty....</span>
                 <span
                   v-if="introState === 1"
                   class="dialog-text"
@@ -72,7 +76,7 @@
                 <span
                   v-if="introState === 6"
                   class="dialog-text"
-                >DOC: ...If we exceed that pressure or if it is more then 3 bar less then the expected...</span>
+                >DOC: ...If we exceed that pressure or if it is more then 10% less then the expected...</span>
                 <span v-if="introState === 7" class="dialog-text">DOC: ...WE ARE FU***D!!!!</span>
                 <span
                   v-if="introState === 8"
@@ -86,9 +90,20 @@
                 <span v-if="introState === 11" class="dialog-text">DOC: Ther world counts on YOU!</span>
               </div>
               <div class="col-2">
+                
+                <button
+                  v-on:click="chooseDifficulty(DIFFICULTY_EASY)"
+                  v-if="introState === 0"
+                  class="btn btn-primary next-button mt-5 mr-4"
+                >EASY</button>
+                <button
+                  v-on:click="chooseDifficulty(DIFFICULTY_HARD)"
+                  v-if="introState === 0"
+                  class="btn btn-primary next-button mt-5"
+                >HARD</button>
                 <button
                   v-on:click="onNext"
-                  v-if="introState <= 10"
+                  v-if="introState <= 10 && introState >= 1"
                   class="btn btn-primary next-button mt-5"
                 >Next</button>
                 <button
