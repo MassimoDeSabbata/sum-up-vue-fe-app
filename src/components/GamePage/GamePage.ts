@@ -123,7 +123,6 @@ export default class GamePage extends Vue {
       const diceRoll = this.generateRandomBetween(1, 100);
       if (diceRoll > 97) {
         this.liquidsStatus[box].boxValue += this.generateRandomBetween(this.boxMinIncrease, this.boxMinIncrease + 1);
-        // this.liquidsStatus[box].boxValue += 3;
       }
       if (this.liquidsStatus[box].height <= 0) {
         this.liquidsStatus[box].stopped = true;
@@ -232,7 +231,7 @@ export default class GamePage extends Vue {
   }
 
   /**
-   * This function resets and starts the game counter, used adds count-down.
+   * This function resets and starts the game counter, used as count-down.
    */
   async startCounter() {
     this.gameCounter = this.gameCounterInitValue;
