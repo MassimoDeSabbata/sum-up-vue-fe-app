@@ -1,0 +1,1 @@
+export const STORE_MUTATION_UPDATE_INTRO_DONE = 'updateIntroDone';
