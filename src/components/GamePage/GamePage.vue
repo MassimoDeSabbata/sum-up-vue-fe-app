@@ -201,6 +201,7 @@
   margin-left: 24%;
   height: 4px;
   padding-bottom: 24%;
+  cursor: pointer;
 }
 
 .water-bubble {
