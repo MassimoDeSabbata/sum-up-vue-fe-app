@@ -1,6 +1,37 @@
 <template>
   <div class="GamePage font-minecraft">
-    <div class="row game-container room-gradient-bg">
+    <div class="row room-gradient-bg swow-scrren-size-error">
+      <div class="col">
+        <div class="row">
+          <div class="col">
+            <h1>ERROR</h1>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="row">
+          <div class="col">
+            <h3>Seems like your screen is too little to contain the greatness of this game</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="row">
+          <div class="col">
+            <h5>try with a bigger screen....</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="row">
+          <div class="col">
+            <font-awesome-icon icon="cog" size="6x" class="slow-spin gear-icon" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row game-container room-gradient-bg swow-game">
       <div class="col-4">
         <div class="row">
           <div class="col gear-spinning">
@@ -269,6 +300,19 @@
 
 .bubble-spawn-container {
   height: 10px;
+}
+
+.swow-scrren-size-error {
+  display: none;
+}
+
+@media only screen and (max-width: 1130px) {
+  .swow-game {
+    display: none;
+  }
+  .swow-scrren-size-error {
+    display: inline;
+  }
 }
 
 @media only screen and (min-height: 600px) {
