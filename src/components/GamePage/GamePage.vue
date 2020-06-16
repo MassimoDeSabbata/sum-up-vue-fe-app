@@ -73,10 +73,10 @@
                 </div>
               </div>
 
-              <div class="row mt-3" v-if="gameEnded">
+              <div class="row mt-2" v-if="gameEnded">
                 <div class="col">
                   <span class="stats-text" v-if="gameIsWon()">YOU saved the WORLD!! Well done!</span>
-                  <br />
+                  <br  v-if="gameIsWon()"/>
                   <span
                     class="stats-text"
                     v-if="gameIsWon()"
